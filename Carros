@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Locação de Veículos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #343a40; /* Fundo escuro */
+            color: #f8f9fa; /* Texto branco */
+            text-align: center;
+            padding: 20px;
+        }
+        .card {
+            background-color: #495057; /* Cartão com fundo cinza escuro */
+            padding: 20px;
+            margin: 15px auto;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            text-align: left;
+            color: #f8f9fa; /* Cor do texto nos cartões */
+        }
+        #output {
+            margin-top: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            padding: 12px;
+            margin: 10px 0;
+            width: calc(100% - 24px);
+            border-radius: 5px;
+            border: 2px solid #ced4da; /* Borda cinza clara */
+            background-color: #ffffff; /* Fundo branco */
+            color: #495057; /* Texto cinza escuro */
+        }
+
+        input::placeholder {
+            color: #6c757d; /* Cor do placeholder */
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #0b08db; /* Botão verde */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e6eee7; /* Botão verde mais escuro ao passar o mouse */
+        }
+        h1, h3 {
+            color: #f8f9fa; /* Cor do texto nos títulos */
+        }
+        /* Estiliza a área de histórico */
+        #output h3 {
+            text-align: center;
+            color: #f8f9fa;
+            margin-bottom: 10px;
+        }
+        /* Estilo para mensagens de erro */
+        .error {
+            color: #ff0000;
+            margin-top: -10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sistema de Locação de Veículos</h1>
+
+    <!-- Formulário para adicionar clientes -->
+    <div class="card">
+        <h3>Adicionar Cliente</h3>
+        <form id="clienteForm">
+            <input type="text" id="nomeCliente" placeholder="Nome do Cliente" required><br>
+            <span class="error" id="nomeClienteError"></span>
+            <input type="text" id="cpfCliente" placeholder="CPF" required><br>
+            <span class="error" id="cpfClienteError"></span>
+            <input type="email" id="emailCliente" placeholder="Email do Cliente" required><br>
+            <span class="error" id="emailClienteError"></span>
+            <button type="submit">Adicionar Cliente</button>
+        </form>
+    </div>
+
+    <!-- Formulário para adicionar veículos -->
+    <div class="card">
+        <h3>Adicionar Veículo</h3>
+        <form id="veiculoForm">
+            <input type="text" id="modeloVeiculo" placeholder="Modelo do Veículo" required><br>
+            <span class="error" id="modeloVeiculoError"></span>
+            <input type="text" id="placaVeiculo" placeholder="Placa do Veículo" required><br>
+            <span class="error" id="placaVeiculoError"></span>
+            <input type="text" id="corVeiculo" placeholder="Cor do Veículo" required><br>
+            <span class="error" id="corVeiculoError"></span>
+            <input type="text" id="marcaVeiculo" placeholder="Marca do Veículo" required><br>
+            <span class="error" id="marcaVeiculoError"></span>
+            <button type="submit">Adicionar Veículo</button>
+        </form>
+    </div>
+
+    <!-- Formulário para alugar veículos -->
+    <div class="card">
+        <h3>Alugar Veículo</h3>
+        <form id="aluguelForm">
+            <select id="clienteSelect" required></select><br>
+            <span class="error" id="clienteSelectError"></span>
+            <select id="veiculoSelect" required></select><br>
+            <span class="error" id="veiculoSelectError"></span>
+            <input type="date" id="dataLocacao" required><br>
+            <span class="error" id="dataLocacaoError"></span>
+            <button type="submit">Alugar Veículo</button>
+        </form>
+    </div>
+
+    <!-- Formulário para devolver veículos -->
+    <div class="card">
+        <h3>Devolver Veículo</h3>
+        <form id="devolucaoForm">
+            <select id="devolucaoVeiculoSelect" required></select><br>
+            <span class="error" id="devolucaoVeiculoSelectError"></span>
+            <input type="date" id="dataDevolucao" required><br>
+            <span class="error" id="dataDevolucaoError"></span>
+            <button type="submit">Devolver Veículo</button>
+        </form>
+    </div>
+
+    <!-- Formulário para consultar histórico -->
+    <div class="card">
+        <h3>Consultar Histórico</h3>
+        <form id="historicoForm">
+            <select id="historicoSelect" required>
+                <option value="cliente">Histórico de Cliente</option>
+                <option value="veiculo">Histórico de Veículo</option>
+            </select><br>
+            <span class="error" id="historicoSelectError"></span>
+            <input type="text" id="historicoId" placeholder="ID (CPF ou Placa)" required><br>
+            <span class="error" id="historicoIdError"></span>
+            <button type="submit">Consultar Histórico</button>
+        </form>
+    </div>
+   
+      
+
+
+    <!-- Botão para mostrar o sistema -->
+    <button onclick="mostrarSistema()">Mostrar Sistema</button>
+     
+
+
+    <div id="output" class="card"></div>
+
+    <script>
+        // Arrays para armazenar clientes e veículos
+        let clientes = [];
+        let veiculos = [];
+        let alugueis = [];
+
+        // Função para validar CPF
+        function validaCPF(cpf) {
+            cpf = cpf.replace(/\D+/g, '');
+            if (cpf.length !== 11) return false;
+
+            let soma = 0;
+            let resto;
+            if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+            for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+            return true;
+        }
+
+        document.getElementById('clienteForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio do formulário
+
+            let valid = true;
+
+            // Validar nome do cliente
+            if (document.getElementById('nomeCliente').value === '') {
+                valid = false;
+                document.getElementById('nomeClienteError').textContent = 'O campo Nome do Cliente deve ser preenchido.';
+            } else {
+                document.getElementById('nomeClienteError').textContent = '';
+            }
+
+            // Validar CPF
+            const cpf = document.getElementById('cpfCliente').value;
+            if (cpf === '' || !validaCPF(cpf)) {
+                valid = false;
+                document.getElementById('cpfClienteError').textContent = 'CPF inválido. Verifique o número digitado.';
+            } else {
+                document.getElementById('cpfClienteError').textContent = '';
+            }
+
+            // Validar email do cliente
+            if (document.getElementById('emailCliente').value === '') {
+                valid = false;
+                document.getElementById('emailClienteError').textContent = 'O campo Email do Cliente deve ser preenchido.';
+            } else {
+                document.getElementById('emailClienteError').textContent = '';
+            }
+
+            // Se todos os campos são válidos, adicionar o cliente
+            if (valid) {
+                const cliente = {
+                    nome: document.getElementById('nomeCliente').value,
+                    cpf: document.getElementById('cpfCliente').value,
+                    email: document.getElementById('emailCliente').value
+                };
+                clientes.push(cliente);
+                atualizarOpcoesClientes();
+                alert('Cliente adicionado com sucesso!');
+                document.getElementById('clienteForm').reset();
+            }
+        });
+
+        document.getElementById('veiculoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let valid = true;
+
+            // Validar modelo do veículo
+            if (document.getElementById('modeloVeiculo').value === '') {
+                valid = false;
+                document.getElementById('modeloVeiculoError').textContent = 'O campo Modelo do Veículo deve ser preenchido.';
+            } else {
+                document.getElementById('modeloVeiculoError').textContent = '';
+            }
+
+            // Validar placa do veículo
+            if (document.getElementById('placaVeiculo').value === '') {
+                valid = false;
+                document.getElementById('placaVeiculoError').textContent = 'O campo Placa do Veículo deve ser preenchido.';
+            } else {
+                document.getElementById('placaVeiculoError').textContent = '';
+            }
+
+            // Validar cor do veículo
+            if (document.getElementById('corVeiculo').value === '') {
+                valid = false;
+                document.getElementById('corVeiculoError').textContent = 'O campo Cor do Veículo deve ser preenchido.';
+            } else {
+                document.getElementById('corVeiculoError').textContent = '';
+            }
+
+            // Validar marca do veículo
+            if (document.getElementById('marcaVeiculo').value === '') {
+                valid = false;
+                document.getElementById('marcaVeiculoError').textContent = 'O campo Marca do Veículo deve ser preenchido.';
+            } else {
+                document.getElementById('marcaVeiculoError').textContent = '';
+            }
+
+            // Se todos os campos são válidos, adicionar o veículo
+            if (valid) {
+                const veiculo = {
+                    modelo: document.getElementById('modeloVeiculo').value,
+                    placa: document.getElementById('placaVeiculo').value,
+                    cor: document.getElementById('corVeiculo').value,
+                    marca: document.getElementById('marcaVeiculo').value,
+                    disponivel: true
+                };
+                veiculos.push(veiculo);
+                atualizarOpcoesVeiculos();
+                alert('Veículo adicionado com sucesso!');
+                document.getElementById('veiculoForm').reset();
+            }
+        });
+
+        document.getElementById('aluguelForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let valid = true;
+
+            // Validar seleção de cliente
+            if (document.getElementById('clienteSelect').value === '') {
+                valid = false;
+                document.getElementById('clienteSelectError').textContent = 'Selecione um cliente.';
+            } else {
+                document.getElementById('clienteSelectError').textContent = '';
+            }
+
+            // Validar seleção de veículo
+            if (document.getElementById('veiculoSelect').value === '') {
+                valid = false;
+                document.getElementById('veiculoSelectError').textContent = 'Selecione um veículo.';
+            } else {
+                document.getElementById('veiculoSelectError').textContent = '';
+            }
+
+            // Validar data de locação
+            if (document.getElementById('dataLocacao').value === '') {
+                valid = false;
+                document.getElementById('dataLocacaoError').textContent = 'Selecione uma data de locação.';
+            } else {
+                document.getElementById('dataLocacaoError').textContent = '';
+            }
+
+            // Se todos os campos são válidos, registrar o aluguel
+            if (valid) {
+                const aluguel = {
+                    cliente: document.getElementById('clienteSelect').value,
+                    veiculo: document.getElementById('veiculoSelect').value,
+                    dataLocacao: document.getElementById('dataLocacao').value,
+                    dataDevolucao: null
+                };
+                alugueis.push(aluguel);
+
+                // Atualiza status de disponibilidade do veículo
+                for (let veiculo of veiculos) {
+                    if (veiculo.placa === aluguel.veiculo) {
+                        veiculo.disponivel = false;
+                        break;
+                    }
+                }
+
+                atualizarOpcoesVeiculos();
+                alert('Veículo alugado com sucesso!');
+                document.getElementById('aluguelForm').reset();
+            }
+        });
+
+        document.getElementById('devolucaoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let valid = true;
+
+            // Validar seleção de veículo para devolução
+            if (document.getElementById('devolucaoVeiculoSelect').value === '') {
+                valid = false;
+                document.getElementById('devolucaoVeiculoSelectError').textContent = 'Selecione um veículo para devolução.';
+            } else {
+                document.getElementById('devolucaoVeiculoSelectError').textContent = '';
+            }
+
+            // Validar data de devolução
+            if (document.getElementById('dataDevolucao').value === '') {
+                valid = false;
+                document.getElementById('dataDevolucaoError').textContent = 'Selecione uma data de devolução.';
+            } else {
+                document.getElementById('dataDevolucaoError').textContent = '';
+            }
+
+            // Se todos os campos são válidos, registrar a devolução
+            if (valid) {
+                const placaVeiculo = document.getElementById('devolucaoVeiculoSelect').value;
+                const dataDevolucao = document.getElementById('dataDevolucao').value;
+
+                // Atualiza a devolução no array de alugueis
+                for (let aluguel of alugueis) {
+                    if (aluguel.veiculo === placaVeiculo && !aluguel.dataDevolucao) {
+                        aluguel.dataDevolucao = dataDevolucao;
+                        break;
+                    }
+                }
+
+                // Atualiza status de disponibilidade do veículo
+                for (let veiculo of veiculos) {
+                    if (veiculo.placa === placaVeiculo) {
+                        veiculo.disponivel = true;
+                        break;
+                    }
+                }
+
+                atualizarOpcoesVeiculos();
+                alert('Veículo devolvido com sucesso!');
+                document.getElementById('devolucaoForm').reset();
+            }
+        });
+
+        document.getElementById('historicoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let valid = true;
+
+            // Validar seleção de tipo de histórico
+            if (document.getElementById('historicoSelect').value === '') {
+                valid = false;
+                document.getElementById('historicoSelectError').textContent = 'Selecione o tipo de histórico.';
+            } else {
+                document.getElementById('historicoSelectError').textContent = '';
+            }
+
+            // Validar ID (CPF ou Placa)
+            if (document.getElementById('historicoId').value === '') {
+                valid = false;
+                document.getElementById('historicoIdError').textContent = 'Digite o CPF ou a Placa para consulta.';
+            } else {
+                document.getElementById('historicoIdError').textContent = '';
+            }
+
+            // Se todos os campos são válidos, mostrar o histórico
+            if (valid) {
+                const tipo = document.getElementById('historicoSelect').value;
+                const id = document.getElementById('historicoId').value;
+                let historico = '';
+
+                if (tipo === 'cliente') {
+                    historico += `<h3>Histórico de Aluguéis do Cliente (CPF: ${id})</h3>`;
+                    historico += '<ul>';
+                    for (let aluguel of alugueis) {
+                        if (aluguel.cliente === id) {
+                            historico += `<li>Veículo: ${aluguel.veiculo} - Data de Locação: ${aluguel.dataLocacao} - Data de Devolução: ${aluguel.dataDevolucao || 'Em Aberto'}</li>`;
+                        }
+                    }
+                    historico += '</ul>';
+                } else if (tipo === 'veiculo') {
+                    historico += `<h3>Histórico de Aluguéis do Veículo (Placa: ${id})</h3>`;
+                    historico += '<ul>';
+                    for (let aluguel of alugueis) {
+                        if (aluguel.veiculo === id) {
+                            historico += `<li>Cliente: ${aluguel.cliente} - Data de Locação: ${aluguel.dataLocacao} - Data de Devolução: ${aluguel.dataDevolucao || 'Em Aberto'}</li>`;
+                        }
+                    }
+                    historico += '</ul>';
+                }
+
+                document.getElementById('output').innerHTML = historico;
+            }
+        });
+
+        function atualizarOpcoesClientes() {
+            const clienteSelect = document.getElementById('clienteSelect');
+            clienteSelect.innerHTML = '<option value="">Selecione o Cliente</option>';
+            for (let cliente of clientes) {
+                const option = document.createElement('option');
+                option.value = cliente.cpf;
+                option.textContent = cliente.nome;
+                clienteSelect.appendChild(option);
+            }
+        }
+
+        function atualizarOpcoesVeiculos() {
+            const veiculoSelect = document.getElementById('veiculoSelect');
+            veiculoSelect.innerHTML = '<option value="">Selecione o Veículo</option>';
+            for (let veiculo of veiculos) {
+                if (veiculo.disponivel) {
+                    const option = document.createElement('option');
+                    option.value = veiculo.placa;
+                    option.textContent = veiculo.modelo;
+                    veiculoSelect.appendChild(option);
+                }
+            }
+
+            const devolucaoVeiculoSelect = document.getElementById('devolucaoVeiculoSelect');
+            devolucaoVeiculoSelect.innerHTML = '<option value="">Selecione o Veículo</option>';
+            for (let veiculo of veiculos) {
+                if (!veiculo.disponivel) {
+                    const option = document.createElement('option');
+                    option.value = veiculo.placa;
+                    option.textContent = veiculo.modelo;
+                    devolucaoVeiculoSelect.appendChild(option);
+                }
+            }
+        }
+            // Por falta dessa funcao que o codigo apresentou erros
+        function mostrarSistema() {
+            let output = document.getElementById('output');
+            output.innerHTML = ''; // Limpa o conteúdo anterior
+
+            // Exibir lista de clientes
+            if (clientes.length > 0) {
+                output.innerHTML += '<h3>Clientes Cadastrados</h3><ul>';
+                for (let cliente of clientes) {
+                    output.innerHTML += `<li>Nome: ${cliente.nome}, CPF: ${cliente.cpf}, Email: ${cliente.email}</li>`;
+                }
+                output.innerHTML += '</ul>';
+            } else {
+                output.innerHTML += '<h3>Nenhum cliente cadastrado.</h3>';
+            }
+
+            // Exibir lista de veículos
+            if (veiculos.length > 0) {
+                output.innerHTML += '<h3>Veículos Cadastrados</h3><ul>';
+                for (let veiculo of veiculos) {
+                    output.innerHTML += `<li>Modelo: ${veiculo.modelo}, Placa: ${veiculo.placa}, Cor: ${veiculo.cor}, Marca: ${veiculo.marca}, Disponível: ${veiculo.disponivel ? 'Sim' : 'Não'}</li>`;
+                }
+                output.innerHTML += '</ul>';
+            } else {
+                output.innerHTML += '<h3>Nenhum veículo cadastrado.</h3>';
+            }
+
+            // Exibir lista de aluguéis
+            if (alugueis.length > 0) {
+                output.innerHTML += '<h3>Histórico de Aluguéis</h3><ul>';
+                for (let aluguel of alugueis) {
+                    output.innerHTML += `<li>Cliente: ${aluguel.cliente}, Veículo: ${aluguel.veiculo}, Data de Locação: ${aluguel.dataLocacao}, Data de Devolução: ${aluguel.dataDevolucao || 'Em Aberto'}</li>`;
+                }
+                output.innerHTML += '</ul>';
+            } else {
+                output.innerHTML += '<h3>Nenhum aluguel registrado.</h3>';
+            }
+        }
+
+    </script>
+</body>
+</html>
