@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<title>LocaDrive - Aluguel de Veículos</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
+</style>
+</head>
+<body class="w3-light-grey">
+
+<!-- Navigation Bar -->
+<div class="w3-bar w3-white w3-large">
+  <a href="#" class="w3-bar-item w3-button w3-red w3-mobile"><i class="fa fa-car w3-margin-right"></i>LocaDrive</a>
+ 
+  <a href="#about" class="w3-bar-item w3-button w3-mobile">Sobre</a>
+  <a href="#contact" class="w3-bar-item w3-button w3-mobile">Contato</a>
+</div>
+
+<!-- Header -->
+<header class="w3-display-container w3-content" style="max-width:1500px;">
+  <img class="w3-image" src="https://imgur.com/cL03Yud.png" alt="LocaDrive" style="min-width:1000px" width="1500" height="800">
+  <div class="w3-display-left w3-padding w3-col l6 m8">
+    <div class="w3-container w3-red">
+      <h2><i class="fa fa-car w3-margin-right"></i>LocaDrive</h2>
+    </div>
+    <div class="w3-container w3-white w3-padding-16">
+      <button onclick="app.openDateModal()" class="w3-button w3-dark-grey w3-block w3-large">Escolher Data</button>
+    </div>
+  </div>
+</header>
+
+<!-- Modal para escolher as datas -->
+<div id="dateModal" class="w3-modal">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+    <div class="w3-center"><br>
+      <span onclick="app.closeDateModal()" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
+      <h2>Selecione as Datas</h2>
+    </div>
+    <form class="w3-container" id="dateForm">
+      <div class="w3-section">
+        <label><i class="fa fa-calendar-o"></i> Data de Retirada</label>
+        <input class="w3-input w3-border w3-margin-bottom" type="date" id="checkIn" required>
+        <label><i class="fa fa-calendar-o"></i> Data de Devolução</label>
+        <input class="w3-input w3-border" type="date" id="checkOut" required>
+        <button class="w3-button w3-block w3-red w3-section w3-padding" type="submit">Ver Veículos Disponíveis</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Conteúdo da Página -->
+<div class="w3-content" style="max-width:1532px;">
+
+  <!-- Seção de Veículos -->
+  <div class="w3-container w3-margin-top" id="vehicles" style="display:none;">
+    <h3>Veículos Disponíveis</h3>
+    <p>Escolha o veículo ideal para sua viagem. Temos várias opções que se encaixam nas suas necessidades.</p>
+  </div>
+
+  <div class="w3-row-padding w3-padding-16" id="vehicle-list">
+    <!-- Lista de veículos será inserida aqui dinamicamente -->
+  </div>
+
+  <!-- Sobre -->
+  <div class="w3-row-padding" id="about">
+    <div class="w3-col l4 12">
+      <h3>Sobre a LocaDrive</h3>
+      <h6>A LocaDrive oferece o melhor serviço de aluguel de veículos para você explorar o mundo com conforto e segurança.</h6>
+    </div>
+    <div class="w3-col l8 12">
+      <!-- Imagem do mapa/localização -->
+      <img src="https://i.imgur.com/wHQIFA0.png" class="w3-image w3-greyscale" style="width:100%;">
+    </div>
+  </div>
+
+  <!-- Contato -->
+  <div class="w3-container" id="contact">
+    <h2>Contato</h2>
+    <p>Entre em contato conosco.</p>
+    <i class="fa fa-map-marker w3-text-red" style="width:30px"></i> Rio de Janeiro, BR<br>
+    <i class="fa fa-phone w3-text-red" style="width:30px"></i> Telefone: +55 21 99999-9999<br>
+    <i class="fa fa-envelope w3-text-red" style="width:30px"> </i> Email: contato@locadrive.com<br>
+    <form action="/action_page.php" target="_blank">
+      <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Nome" required name="Name"></p>
+      <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Email" required name="Email"></p>
+      <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Mensagem" required name="Message"></p>
+      <p><button class="w3-button w3-black w3-padding-large" type="submit">ENVIAR MENSAGEM</button></p>
+    </form>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="w3-padding-32 w3-black w3-center w3-margin-top">
+  <h5>Nos Encontre nas Redes Sociais</h5>
+  <div class="w3-xlarge w3-padding-16">
+    <i class="fa fa-facebook-official w3-hover-opacity"></i>
+    <i class="fa fa-instagram w3-hover-opacity"></i>
+    <i class="fa fa-twitter w3-hover-opacity"></i>
+    <i class="fa fa-linkedin w3-hover-opacity"></i>
+  </div>
+  <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" class="w3-hover-text-green">w3.css</a></p>
+</footer>
+
+<!-- Script para carregar os veículos -->
+<script>
+class Vehicle {
+    constructor(modelo, preco, caracteristicas, imagem) {
+        this.modelo = modelo;
+        this.preco = preco;
+        this.caracteristicas = caracteristicas;
+        this.imagem = imagem;
+    }
+}
+
+class App {
+    constructor() {
+        this.vehicles = [
+            new Vehicle('Fiat Uno', 99.99, 'Econômico, 4 portas, Ar-condicionado', 'https://www.autoo.com.br/fotos/2021/8/960_720/fiat_uno_2021_1_16082021_49945_960_720.jpg'),
+            new Vehicle('Ford Ka', 189.99, 'Compacto, 4 portas, Direção hidráulica', 'https://www.autoo.com.br/fotos/2019/4/1280_960/ford_ka-sedan_2019_1_23042019_12294_1280_960.jpg'),
+            new Vehicle('Chevrolet Onix', 299.99, 'Hatch, 4 portas, Câmbio automático', 'https://www.autoo.com.br/fotos/2022/2/960_720/chevrolet_onix_2021_1_24022022_70721_960_720.jpg')
+        ];
+        this.init();
+    }
+
+    init() {
+        document.getElementById('dateForm').addEventListener('submit', this.showAvailableVehicles.bind(this));
+    }
+
+    openDateModal() {
+        document.getElementById('dateModal').style.display = 'block';
+    }
+
+    closeDateModal() {
+        document.getElementById('dateModal').style.display = 'none';
+    }
+
+    showAvailableVehicles(event) {
+        event.preventDefault();
+        const checkIn = document.getElementById('checkIn').value;
+        const checkOut = document.getElementById('checkOut').value;
+
+        // Verificação para garantir que a data de retirada seja em 2024 ou depois
+        const minDate = new Date('2024-01-01'); // Data mínima permitida
+        const selectedDate = new Date(checkIn); // Data de retirada escolhida
+
+        if (selectedDate < minDate) {
+            alert('A data de retirada não pode ser anterior a 2024.');
+            return;
+        }
+
+        if (!checkIn || !checkOut) {
+            alert('Por favor, selecione ambas as datas.');
+            return;
+        }
+
+        const vehicleListDiv = document.getElementById('vehicle-list');
+        vehicleListDiv.innerHTML = ''; // Limpa a lista de veículos antes de exibir
+
+        // Calcula a diferença de dias entre as datas
+        const numDias = this.calcularDiferencaDias(checkIn, checkOut);
+
+        // Fecha o modal de escolha de datas
+        this.closeDateModal();
+
+        // Exibe a seção de veículos
+        document.getElementById('vehicles').style.display = 'block';
+        window.scrollTo(0, document.getElementById('vehicles').offsetTop); // Rola para a seção de veículos
+
+        // Cria os cards de veículos disponíveis
+        this.vehicles.forEach(vehicle => {
+            const vehicleDiv = document.createElement('div');
+            vehicleDiv.classList.add('w3-third', 'w3-margin-bottom');
+
+            const vehicleCard = `
+                <img src="${vehicle.imagem}" alt="${vehicle.modelo}" style="width:100%">
+                <div class="w3-container w3-white">
+                    <h3>${vehicle.modelo}</h3>
+                    <h6 class="w3-opacity">A partir de R$${vehicle.preco.toFixed(2)} por dia</h6>
+                    <p>${vehicle.caracteristicas}</p>
+                    <button class="w3-button w3-block w3-black w3-margin-bottom" onclick="app.openForm('${vehicle.modelo}', ${vehicle.preco}, ${numDias})">Escolher Veículo</button>
+                </div>
+            `;
+
+            // Adiciona o conteúdo ao div do veículo
+            vehicleDiv.innerHTML = vehicleCard;
+
+            // Adiciona o div do veículo à lista de veículos
+            vehicleListDiv.appendChild(vehicleDiv);
+        });
+    }
+
+    calcularDiferencaDias(data1, data2) {
+        const diffTime = Math.abs(new Date(data2) - new Date(data1));
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    }
+
+    validarCPF(cpf) {
+        cpf = cpf.replace(/[^\d]+/g,'');
+        if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+        let soma = 0, resto;
+        for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf.substring(9, 10))) return false;
+        soma = 0;
+        for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        return resto === parseInt(cpf.substring(10, 11));
+    }
+
+    openForm(modelo, preco, numDias) {
+        const precoFinal = (preco * numDias).toFixed(2);
+        const formHtml = `
+            <div id="formModal" class="w3-modal" style="display:block;">
+              <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+                <div class="w3-center"><br>
+                  <span onclick="app.closeFormModal()" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
+                  <h2>Informações para Aluguel</h2>
+                </div>
+                <form class="w3-container" id="infoForm">
+                  <div class="w3-section">
+                    <p><strong>Veículo escolhido:</strong> ${modelo}</p>
+                    <p><strong>Preço por dia:</strong> R$${preco.toFixed(2)}</p>
+                    <p><strong>Número de dias:</strong> ${numDias} dias</p>
+                    <p><strong>Preço total:</strong> R$${precoFinal}</p>
+                    <label><i class="fa fa-user"></i> Nome</label>
+                    <input class="w3-input w3-border w3-margin-bottom" type="text" name="Nome" required>
+                    <label><i class="fa fa-envelope"></i> Email</label>
+                    <input class="w3-input w3-border w3-margin-bottom" type="email" name="Email" required>
+                    <label><i class="fa fa-id-card"></i> CPF</label>
+                    <input class="w3-input w3-border w3-margin-bottom" type="text" name="CPF" required>
+                    <label><i class="fa fa-address-card"></i> Endereço</label>
+                    <input class="w3-input w3-border w3-margin-bottom" type="text" name="Endereco" required>
+                    <label><i class="fa fa-credit-card"></i> Forma de Pagamento</label>
+                    <select class="w3-input w3-border w3-margin-bottom" name="Pagamento" required>
+                        <option value="cartao">Cartão de Crédito</option>
+                        <option value="boleto">Boleto Bancário</option>
+                        <option value="pix">PIX</option>
+                    </select>
+                    <button class="w3-button w3-block w3-red w3-section w3-padding" type="submit">Confirmar Aluguel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+        `;
+
+        // Adiciona o formulário ao body
+        document.body.insertAdjacentHTML('beforeend', formHtml);
+        document.getElementById('infoForm').addEventListener('submit', (e) => this.validarFormulario(e, modelo, precoFinal));
+    }
+
+    closeFormModal() {
+        document.getElementById('formModal').remove();
+    }
+
+    validarFormulario(event, modelo, precoFinal) {
+    event.preventDefault();
+    const cpf = document.querySelector('input[name="CPF"]').value;
+    if (!this.validarCPF(cpf)) {
+        alert('CPF inválido. Por favor, insira um CPF válido.');
+        return;
+    }
+
+    // Remove o modal de formulário
+    this.closeFormModal();
+
+    // Exibe a mensagem de confirmação do aluguel
+    const confirmationMessage = `
+        <div id="confirmationMessage" class="w3-container w3-green w3-center w3-padding-32">
+            <h2>Aluguel Confirmado!</h2>
+            <p>Obrigado por alugar com a LocaDrive.</p>
+            <p>O veículo <strong>${modelo}</strong> foi alugado com sucesso.</p>
+            <p>Você receberá um email de confirmação em breve.</p>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', confirmationMessage);
+
+    // Rola a página para a mensagem de confirmação
+    document.getElementById('confirmationMessage').scrollIntoView({ behavior: 'smooth' });
+}
+
+}
+// Instância da aplicação
+const app = new App();
+</script>
+
+</body>
+</html>
